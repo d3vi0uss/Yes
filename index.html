@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elite Case Clicker</title>
+
+<style>
+:root{
+--bg:#0f1115;
+--card:#1a1d24;
+--card2:#15181f;
+--accent:#ff7a00;
+--accent2:#ff9d2f;
+--text:#ffffff;
+--muted:#9aa3ad;
+}
+
+body{
+margin:0;
+font-family:Segoe UI,Arial;
+background:var(--bg);
+color:var(--text);
+}
+
+header{
+background:#0c0e12;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+flex-wrap:wrap;
+border-bottom:1px solid #222;
+}
+
+.logo{
+color:var(--accent);
+font-weight:700;
+font-size:20px;
+}
+
+.stats{
+font-size:14px;
+color:var(--muted);
+}
+
+nav{
+display:flex;
+gap:10px;
+padding:12px;
+flex-wrap:wrap;
+justify-content:center;
+background:#0c0e12;
+border-bottom:1px solid #222;
+}
+
+nav button{
+background:var(--card);
+border:none;
+color:white;
+padding:10px 18px;
+border-radius:30px;
+cursor:pointer;
+transition:0.2s;
+}
+
+nav button:hover{
+background:var(--accent);
+}
+
+.section{display:none;padding:20px;}
+.active{display:block;}
+
+.coin-area{
+text-align:center;
+margin-top:40px;
+}
+
+#coin{
+width:180px;
+cursor:pointer;
+transition:0.1s;
+filter:drop-shadow(0 0 15px rgba(255,122,0,0.5));
+}
+
+#coin:active{
+transform:scale(0.9);
+}
+
+.floating{
+position:absolute;
+color:var(--accent);
+font-weight:bold;
+pointer-events:none;
+animation:floatUp 1s ease-out forwards;
+}
+
+@keyframes floatUp{
+0%{opacity:1;transform:translateY(0);}
+100%{opacity:0;transform:translateY(-40px);}
+}
+
+button{
+background:linear-gradient(145deg,var(--accent),var(--accent2));
+border:none;
+color:white;
+padding:10px 18px;
+border-radius:30px;
+cursor:pointer;
+font-weight:600;
+}
+
+button:active{transform:scale(0.95);}
+
+.inventory-grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+gap:15px;
+margin-top:20px;
+}
+
+.card{
+background:var(--card);
+border-radius:15px;
+padding:12px;
+position:relative;
+transition:0.2s;
+}
+
+.card:hover{
+transform:translateY(-5px);
+}
+
+.card img{
+width:100%;
+border-radius:10px;
+}
+
+.skin-name{
+font-size:14px;
+margin-top:6px;
+}
+
+.price{
+color:var(--accent);
+font-weight:bold;
+margin-top:4px;
+}
+
+.rarity-blue{border-top:3px solid #4b69ff;}
+.rarity-purple{border-top:3px solid #8847ff;}
+.rarity-pink{border-top:3px solid #d32ce6;}
+.rarity-red{border-top:3px solid #eb4b4b;}
+.rarity-gold{
+border-top:3px solid gold;
+box-shadow:0 0 15px rgba(255,215,0,0.5);
+}
+
+.case-strip{
+overflow:hidden;
+white-space:nowrap;
+background:var(--card2);
+padding:15px;
+border-radius:15px;
+margin-top:20px;
+}
+
+.case-item{
+display:inline-block;
+width:160px;
+margin-right:10px;
+background:var(--card);
+padding:10px;
+border-radius:10px;
+}
+
+.case-item img{
+width:100%;
+border-radius:8px;
+}
+
+@media(max-width:600px){
+#coin{width:140px;}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="logo">EliteDrop</div>
+<div class="stats">
+💰 $<span id="money">0</span> |
+XP <span id="xp">0</span> |
+Lvl <span id="level">1</span>
+</div>
+</header>
+
+<nav>
+<button onclick="show('clicker')">Click</button>
+<button onclick="show('cases')">Cases</button>
+<button onclick="show('inventory')">Inventory</button>
+</nav>
+
+<div id="clicker" class="section active">
+<div class="coin-area">
+<img id="coin" src="assets/images/coin.png" onclick="clickMoney(event)">
+</div>
+</div>
+
+<div id="cases" class="section">
+<h2>Open Case ($50)</h2>
+<button onclick="openCase()">Open</button>
+<div class="case-strip" id="caseStrip"></div>
+</div>
+
+<div id="inventory" class="section">
+<h2>Your Inventory</h2>
+<div class="inventory-grid" id="inv"></div>
+</div>
+
+<script>
+let money=0,xp=0,level=1;
+let inventory=[];
+
+const skins=[
+{name:"AK-47 | Elite Build",rarity:"blue",base:20,weight:40,img:"assets/images/ak_elite.png"},
+{name:"M4A1-S | Cyrex",rarity:"purple",base:40,weight:25,img:"assets/images/m4_cyrex.png"},
+{name:"AWP | Oni Taiji",rarity:"pink",base:70,weight:15,img:"assets/images/awp_oni.png"},
+{name:"AK-47 | Bloodsport",rarity:"red",base:100,weight:10,img:"assets/images/ak_bloodsport.png"},
+{name:"Karambit | Ruby",rarity:"gold",base:500,weight:4,img:"assets/images/karambit_ruby.png"},
+{name:"Karambit | Emerald",rarity:"gold",base:500,weight:4,img:"assets/images/karambit_emerald.png"},
+{name:"Karambit | Sapphire",rarity:"gold",base:500,weight:4,img:"assets/images/karambit_sapphire.png"},
+{name:"Karambit | Blue Gem",rarity:"gold",base:800,weight:3,img:"assets/images/karambit_bluegem.png"}
+];
+
+function show(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+}
+
+function update(){
+document.getElementById("money").innerText=Math.floor(money);
+document.getElementById("xp").innerText=xp;
+document.getElementById("level").innerText=level;
+localStorage.setItem("eliteSave",JSON.stringify({money,xp,level,inventory}));
+}
+
+function clickMoney(e){
+money++;
+xp+=5;
+if(xp>=level*100){xp=0;level++;}
+update();
+
+let float=document.createElement("div");
+float.className="floating";
+float.innerText="+$1";
+float.style.left=e.pageX+"px";
+float.style.top=e.pageY+"px";
+document.body.appendChild(float);
+setTimeout(()=>float.remove(),1000);
+}
+
+function weightedSkin(){
+let total=skins.reduce((a,b)=>a+b.weight,0);
+let r=Math.random()*total;
+for(let s of skins){
+if(r<s.weight)return s;
+r-=s.weight;
+}
+}
+
+function openCase(){
+if(money<50)return;
+money-=50;
+update();
+
+let strip=document.getElementById("caseStrip");
+strip.innerHTML="";
+let roll=[];
+
+for(let i=0;i<25;i++){
+let skin=weightedSkin();
+roll.push(skin);
+
+let div=document.createElement("div");
+div.className="case-item rarity-"+skin.rarity;
+div.innerHTML=`<img src="${skin.img}"><div>${skin.name}</div>`;
+strip.appendChild(div);
+}
+
+let scroll=0;
+let anim=setInterval(()=>{
+scroll+=10;
+strip.scrollLeft=scroll;
+},20);
+
+setTimeout(()=>{
+clearInterval(anim);
+let win=roll[20];
+inventory.push(win);
+updateInventory();
+update();
+},2000);
+}
+
+function updateInventory(){
+let div=document.getElementById("inv");
+div.innerHTML="";
+inventory.forEach((item,i)=>{
+let value=item.base+Math.floor(Math.random()*50);
+div.innerHTML+=`
+<div class="card rarity-${item.rarity}">
+<img src="${item.img}">
+<div class="skin-name">${item.name}</div>
+<div class="price">$${value}</div>
+<button onclick="sell(${i},${value})">Sell</button>
+</div>`;
+});
+}
+
+function sell(i,v){
+money+=v;
+inventory.splice(i,1);
+updateInventory();
+update();
+}
+
+function load(){
+let s=JSON.parse(localStorage.getItem("eliteSave"));
+if(s){money=s.money;xp=s.xp;level=s.level;inventory=s.inventory;}
+updateInventory();
+update();
+}
+
+load();
+</script>
+
+</body>
+</html>
