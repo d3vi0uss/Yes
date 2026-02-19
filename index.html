@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Elite Case Clicker</title>
+<title>EliteDrop</title>
 
 <style>
 :root{
 --bg:#0f1115;
 --card:#1a1d24;
---card2:#15181f;
 --accent:#ff7a00;
 --accent2:#ff9d2f;
 --text:#ffffff;
@@ -29,7 +28,6 @@ padding:15px;
 display:flex;
 justify-content:space-between;
 align-items:center;
-flex-wrap:wrap;
 border-bottom:1px solid #222;
 }
 
@@ -48,7 +46,6 @@ nav{
 display:flex;
 gap:10px;
 padding:12px;
-flex-wrap:wrap;
 justify-content:center;
 background:#0c0e12;
 border-bottom:1px solid #222;
@@ -110,8 +107,6 @@ cursor:pointer;
 font-weight:600;
 }
 
-button:active{transform:scale(0.95);}
-
 .inventory-grid{
 display:grid;
 grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
@@ -123,12 +118,7 @@ margin-top:20px;
 background:var(--card);
 border-radius:15px;
 padding:12px;
-position:relative;
 transition:0.2s;
-}
-
-.card:hover{
-transform:translateY(-5px);
 }
 
 .card img{
@@ -136,16 +126,8 @@ width:100%;
 border-radius:10px;
 }
 
-.skin-name{
-font-size:14px;
-margin-top:6px;
-}
-
-.price{
-color:var(--accent);
-font-weight:bold;
-margin-top:4px;
-}
+.skin-name{font-size:14px;margin-top:6px;}
+.price{color:var(--accent);font-weight:bold;margin-top:4px;}
 
 .rarity-blue{border-top:3px solid #4b69ff;}
 .rarity-purple{border-top:3px solid #8847ff;}
@@ -159,7 +141,7 @@ box-shadow:0 0 15px rgba(255,215,0,0.5);
 .case-strip{
 overflow:hidden;
 white-space:nowrap;
-background:var(--card2);
+background:#15181f;
 padding:15px;
 border-radius:15px;
 margin-top:20px;
@@ -210,7 +192,7 @@ Lvl <span id="level">1</span>
 
 <div id="cases" class="section">
 <h2>Open Case ($50)</h2>
-<button onclick="openCase()">Open</button>
+<button onclick="openCase()">Open Case</button>
 <div class="case-strip" id="caseStrip"></div>
 </div>
 
@@ -271,7 +253,7 @@ r-=s.weight;
 }
 
 function openCase(){
-if(money<50)return;
+if(money<50)return alert("Not enough money!");
 money-=50;
 update();
 
@@ -279,7 +261,7 @@ let strip=document.getElementById("caseStrip");
 strip.innerHTML="";
 let roll=[];
 
-for(let i=0;i<25;i++){
+for(let i=0;i<30;i++){
 let skin=weightedSkin();
 roll.push(skin);
 
@@ -291,17 +273,18 @@ strip.appendChild(div);
 
 let scroll=0;
 let anim=setInterval(()=>{
-scroll+=10;
+scroll+=12;
 strip.scrollLeft=scroll;
 },20);
 
 setTimeout(()=>{
 clearInterval(anim);
-let win=roll[20];
+let win=roll[25];
 inventory.push(win);
 updateInventory();
 update();
-},2000);
+alert("You got: "+win.name);
+},2200);
 }
 
 function updateInventory(){
